@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+option go_package = ".";
+
+import "shell.proto";
+
+service Bunker {
+    rpc RunShell(RunShellRequest) returns(RunShellResponse) {}
+}

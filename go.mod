@@ -8,4 +8,6 @@ require (
 	github.com/lwch/logging v0.0.0-20220322084100-ec48185d95ab
 	github.com/lwch/runtime v0.0.0-20190520054850-8c97e19e0c6d
 	github.com/lwch/yaml v0.0.0-20211206085137-772f80e85a26
+	google.golang.org/grpc v1.47.0
+	google.golang.org/protobuf v1.28.0
 )

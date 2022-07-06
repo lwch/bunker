@@ -1,0 +1,3 @@
+#!/bin/sh
+./build
+./bin/bunker -conf conf/server.yaml

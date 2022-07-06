@@ -10,6 +10,7 @@ import (
 )
 
 type Configure struct {
+	ID        string
 	Server    string
 	UseSSL    bool
 	Listen    uint16
@@ -23,6 +24,7 @@ type Configure struct {
 // Load load configure file
 func Load(dir string) *Configure {
 	var cfg struct {
+		ID     string `yaml:"id"`
 		Server string `yaml:"server"`
 		SSL    bool   `yaml:"ssl"`
 		Listen uint16 `yaml:"listen"`
@@ -44,6 +46,7 @@ func Load(dir string) *Configure {
 		cfg.Log.Dir = filepath.Join(filepath.Dir(dir), cfg.Log.Dir)
 	}
 	return &Configure{
+		ID:        cfg.ID,
 		Server:    cfg.Server,
 		UseSSL:    cfg.SSL,
 		Listen:    cfg.Listen,
