@@ -1,0 +1,3 @@
+server: 127.0.0.1:6155 # 服务器地址
+ssl: false             # 是否使用tls加密连接
+#include common.yaml
