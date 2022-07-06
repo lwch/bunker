@@ -54,8 +54,8 @@ func main() {
 	}
 
 	appCfg := &service.Config{
-		Name:         "np-svr",
-		DisplayName:  "np-svr",
+		Name:         "bunker",
+		DisplayName:  "bunker",
 		Description:  "nat forward service",
 		UserName:     *user,
 		Arguments:    []string{"-conf", dir},
