@@ -4,7 +4,7 @@
 // 	protoc        v3.21.2
 // source: shell.proto
 
-package __
+package network
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -20,14 +20,14 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type RunShellRequest struct {
+type RunShellArguments struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 }
 
-func (x *RunShellRequest) Reset() {
-	*x = RunShellRequest{}
+func (x *RunShellArguments) Reset() {
+	*x = RunShellArguments{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_shell_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -35,13 +35,13 @@ func (x *RunShellRequest) Reset() {
 	}
 }
 
-func (x *RunShellRequest) String() string {
+func (x *RunShellArguments) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*RunShellRequest) ProtoMessage() {}
+func (*RunShellArguments) ProtoMessage() {}
 
-func (x *RunShellRequest) ProtoReflect() protoreflect.Message {
+func (x *RunShellArguments) ProtoReflect() protoreflect.Message {
 	mi := &file_shell_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -53,19 +53,19 @@ func (x *RunShellRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use RunShellRequest.ProtoReflect.Descriptor instead.
-func (*RunShellRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use RunShellArguments.ProtoReflect.Descriptor instead.
+func (*RunShellArguments) Descriptor() ([]byte, []int) {
 	return file_shell_proto_rawDescGZIP(), []int{0}
 }
 
-type RunShellResponse struct {
+type ShellResizeArguments struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 }
 
-func (x *RunShellResponse) Reset() {
-	*x = RunShellResponse{}
+func (x *ShellResizeArguments) Reset() {
+	*x = ShellResizeArguments{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_shell_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -73,13 +73,13 @@ func (x *RunShellResponse) Reset() {
 	}
 }
 
-func (x *RunShellResponse) String() string {
+func (x *ShellResizeArguments) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*RunShellResponse) ProtoMessage() {}
+func (*ShellResizeArguments) ProtoMessage() {}
 
-func (x *RunShellResponse) ProtoReflect() protoreflect.Message {
+func (x *ShellResizeArguments) ProtoReflect() protoreflect.Message {
 	mi := &file_shell_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -91,19 +91,21 @@ func (x *RunShellResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use RunShellResponse.ProtoReflect.Descriptor instead.
-func (*RunShellResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use ShellResizeArguments.ProtoReflect.Descriptor instead.
+func (*ShellResizeArguments) Descriptor() ([]byte, []int) {
 	return file_shell_proto_rawDescGZIP(), []int{1}
 }
 
 var File_shell_proto protoreflect.FileDescriptor
 
 var file_shell_proto_rawDesc = []byte{
-	0x0a, 0x0b, 0x73, 0x68, 0x65, 0x6c, 0x6c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x11, 0x0a,
-	0x0f, 0x52, 0x75, 0x6e, 0x53, 0x68, 0x65, 0x6c, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x22, 0x12, 0x0a, 0x10, 0x52, 0x75, 0x6e, 0x53, 0x68, 0x65, 0x6c, 0x6c, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x42, 0x03, 0x5a, 0x01, 0x2e, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x33,
+	0x0a, 0x0b, 0x73, 0x68, 0x65, 0x6c, 0x6c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x13, 0x0a,
+	0x11, 0x52, 0x75, 0x6e, 0x53, 0x68, 0x65, 0x6c, 0x6c, 0x41, 0x72, 0x67, 0x75, 0x6d, 0x65, 0x6e,
+	0x74, 0x73, 0x22, 0x16, 0x0a, 0x14, 0x53, 0x68, 0x65, 0x6c, 0x6c, 0x52, 0x65, 0x73, 0x69, 0x7a,
+	0x65, 0x41, 0x72, 0x67, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x73, 0x42, 0x25, 0x5a, 0x23, 0x67, 0x69,
+	0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x6c, 0x77, 0x63, 0x68, 0x2f, 0x62, 0x75,
+	0x6e, 0x6b, 0x65, 0x72, 0x2f, 0x63, 0x6f, 0x64, 0x65, 0x2f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72,
+	0x6b, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -120,8 +122,8 @@ func file_shell_proto_rawDescGZIP() []byte {
 
 var file_shell_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_shell_proto_goTypes = []interface{}{
-	(*RunShellRequest)(nil),  // 0: RunShellRequest
-	(*RunShellResponse)(nil), // 1: RunShellResponse
+	(*RunShellArguments)(nil),    // 0: RunShellArguments
+	(*ShellResizeArguments)(nil), // 1: ShellResizeArguments
 }
 var file_shell_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -138,7 +140,7 @@ func file_shell_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_shell_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RunShellRequest); i {
+			switch v := v.(*RunShellArguments); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -150,7 +152,7 @@ func file_shell_proto_init() {
 			}
 		}
 		file_shell_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RunShellResponse); i {
+			switch v := v.(*ShellResizeArguments); i {
 			case 0:
 				return &v.state
 			case 1:

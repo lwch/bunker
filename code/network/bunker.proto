@@ -1,9 +1,14 @@
 syntax = "proto3";
 
-option go_package = ".";
+option go_package = "github.com/lwch/bunker/code/network";
 
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
 import "shell.proto";
 
 service Bunker {
-    rpc RunShell(RunShellRequest) returns(RunShellResponse) {}
+    // shell
+    rpc RunShell(google.protobuf.Empty) returns(RunShellArguments) {}
+    rpc ShellResize(google.protobuf.Empty) returns(ShellResizeArguments) {}
+    rpc ShellForward(stream google.protobuf.BytesValue) returns(stream google.protobuf.BytesValue) {}
 }

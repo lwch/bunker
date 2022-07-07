@@ -1,9 +1,9 @@
 syntax = "proto3";
 
-option go_package = ".";
+option go_package = "github.com/lwch/bunker/code/network";
 
-message RunShellRequest {
+message RunShellArguments {
 }
 
-message RunShellResponse {
+message ShellResizeArguments {
 }
