@@ -1,44 +1,115 @@
-package server
+package main
 
 import (
 	"context"
 	"crypto/tls"
 	"fmt"
 	"net"
+	"net/http"
+	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/lwch/bunker/code/conf"
 	"github.com/lwch/bunker/code/network"
+	"github.com/lwch/bunker/code/server/shell"
+	"github.com/lwch/bunker/code/utils"
 	"github.com/lwch/logging"
 	"github.com/lwch/runtime"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 type server struct {
-	cfg *conf.Configure
 	network.UnimplementedBunkerServer
+	cfg *conf.Configure
+	sh  *shell.Handler
+}
+
+func newServer(cfg *conf.Configure) *server {
+	return &server{
+		cfg: cfg,
+		sh:  shell.New(),
+	}
 }
 
 // Run run in server mode
-func Run(cfg *conf.Configure) {
+func (svr *server) Run() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	go svr.grpcServe(ctx, cancel)
+	go svr.httpServe(ctx, cancel)
+
+	<-ctx.Done()
+}
+
+func (svr *server) grpcServe(ctx context.Context, cancel context.CancelFunc) {
+	defer utils.Recover("grpc_serve")
+	defer cancel()
+
 	var l net.Listener
 	var err error
 	var options []grpc.ServerOption
-	if len(cfg.TLSCrt) > 0 && len(cfg.TLSKey) > 0 {
-		cert, err := tls.LoadX509KeyPair(cfg.TLSCrt, cfg.TLSKey)
+	if len(svr.cfg.TLSCrt) > 0 && len(svr.cfg.TLSKey) > 0 {
+		cert, err := tls.LoadX509KeyPair(svr.cfg.TLSCrt, svr.cfg.TLSKey)
 		runtime.Assert(err)
 		options = append(options, grpc.Creds(credentials.NewServerTLSFromCert(&cert)))
-	} else {
-		l, err = net.Listen("tcp", fmt.Sprintf(":%d", cfg.Listen))
 	}
-	s := &server{cfg: cfg}
-	options = append(options, grpc.UnaryInterceptor(s.verify))
+	l, err = net.Listen("tcp", fmt.Sprintf(":%d", svr.cfg.GrpcListen))
+	options = append(options, grpc.UnaryInterceptor(svr.verify))
 	runtime.Assert(err)
-	logging.Info("listen on %d", cfg.Listen)
-	svr := grpc.NewServer(options...)
-	network.RegisterBunkerServer(svr, &server{})
-	runtime.Assert(svr.Serve(l))
+	logging.Info("grpc listen on %d", svr.cfg.GrpcListen)
+	s := grpc.NewServer(options...)
+	network.RegisterBunkerServer(s, svr)
+	runtime.Assert(s.Serve(l))
+}
+
+func (svr *server) httpServe(ctx context.Context, cancel context.CancelFunc) {
+	defer utils.Recover("http_serve")
+	defer cancel()
+
+	gin.SetMode(gin.ReleaseMode)
+	router := gin.New()
+	router.Use(gin.CustomRecovery(func(c *gin.Context, err interface{}) {
+		logging.Error("http handle error: %v", err)
+		var e error
+		switch er := err.(type) {
+		case error:
+			e = er
+		default:
+			e = fmt.Errorf("%v", err)
+		}
+		c.AbortWithError(http.StatusInternalServerError, e)
+	}))
+
+	type handler interface {
+		ApiFuncs() []gin.RouteInfo
+	}
+
+	reg := func(h handler) {
+		for _, info := range h.ApiFuncs() {
+			if !strings.HasPrefix(info.Path, "/api/") {
+				info.Path = "/api/" + info.Path
+			}
+			router.Handle(info.Method, info.Path, info.HandlerFunc)
+		}
+	}
+
+	reg(svr.sh)
+
+	logging.Info("http listen on %d", svr.cfg.HttpListen)
+	var err error
+	if len(svr.cfg.TLSCrt) > 0 && len(svr.cfg.TLSKey) > 0 {
+		err = router.RunTLS(fmt.Sprintf(":%d", svr.cfg.HttpListen),
+			svr.cfg.TLSCrt, svr.cfg.TLSKey)
+	} else {
+		err = router.Run(fmt.Sprintf(":%d", svr.cfg.HttpListen))
+	}
+	runtime.Assert(err)
 }
 
 func (svr *server) verify(ctx context.Context, req interface{},
@@ -49,4 +120,16 @@ func (svr *server) verify(ctx context.Context, req interface{},
 		return nil, err
 	}
 	return handler(ctx, req)
+}
+
+func agentID(ctx context.Context) (string, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return "", status.Errorf(codes.InvalidArgument, "Retrieving metadata is failed")
+	}
+	id := md.Get("id")
+	if len(id) == 0 {
+		return "", status.Errorf(codes.Unauthenticated, "Missing agent id")
+	}
+	return id[0], nil
 }

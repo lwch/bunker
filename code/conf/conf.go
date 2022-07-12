@@ -15,27 +15,29 @@ import (
 )
 
 type Configure struct {
-	ID        string
-	Server    string
-	UseSSL    bool
-	Listen    uint16
-	TLSKey    string
-	TLSCrt    string
-	LogDir    string
-	LogSize   utils.Bytes
-	LogRotate int
-	otp       *utils.TOTP
+	ID         string
+	Server     string
+	UseSSL     bool
+	GrpcListen uint16
+	HttpListen uint16
+	TLSKey     string
+	TLSCrt     string
+	LogDir     string
+	LogSize    utils.Bytes
+	LogRotate  int
+	otp        *utils.TOTP
 }
 
 // Load load configure file
 func Load(dir string) *Configure {
 	var cfg struct {
-		ID     string `yaml:"id"`
-		Server string `yaml:"server"`
-		SSL    bool   `yaml:"ssl"`
-		Listen uint16 `yaml:"listen"`
-		Secret string `yaml:"secret"`
-		Log    struct {
+		ID         string `yaml:"id"`
+		Server     string `yaml:"server"`
+		SSL        bool   `yaml:"ssl"`
+		GrpcListen uint16 `yaml:"grpc_listen"`
+		HttpListen uint16 `yaml:"http_listen"`
+		Secret     string `yaml:"secret"`
+		Log        struct {
 			Dir    string      `yaml:"dir"`
 			Size   utils.Bytes `yaml:"size"`
 			Rotate int         `yaml:"rotate"`
@@ -52,24 +54,28 @@ func Load(dir string) *Configure {
 		cfg.Log.Dir = filepath.Join(filepath.Dir(dir), cfg.Log.Dir)
 	}
 	return &Configure{
-		ID:        cfg.ID,
-		Server:    cfg.Server,
-		UseSSL:    cfg.SSL,
-		Listen:    cfg.Listen,
-		TLSKey:    cfg.TLS.Key,
-		TLSCrt:    cfg.Secret,
-		LogDir:    cfg.Log.Dir,
-		LogSize:   cfg.Log.Size,
-		LogRotate: cfg.Log.Rotate,
-		otp:       utils.NewTOTP(cfg.Secret),
+		ID:         cfg.ID,
+		Server:     cfg.Server,
+		UseSSL:     cfg.SSL,
+		GrpcListen: cfg.GrpcListen,
+		HttpListen: cfg.HttpListen,
+		TLSKey:     cfg.TLS.Key,
+		TLSCrt:     cfg.Secret,
+		LogDir:     cfg.Log.Dir,
+		LogSize:    cfg.Log.Size,
+		LogRotate:  cfg.Log.Rotate,
+		otp:        utils.NewTOTP(cfg.Secret),
 	}
 }
 
-// SecretContext append token from secret
-func (cfg *Configure) SecretContext(ctx context.Context) context.Context {
-	return metadata.AppendToOutgoingContext(ctx, "authorization", "TOTP "+cfg.otp.Gen())
+// BuildHeader build request header
+func (cfg *Configure) BuildHeader(ctx context.Context) context.Context {
+	ctx = metadata.AppendToOutgoingContext(ctx, "id", cfg.ID)
+	ctx = metadata.AppendToOutgoingContext(ctx, "authorization", "TOTP "+cfg.otp.Gen())
+	return ctx
 }
 
+// SecretVerify
 func (cfg *Configure) SecretVerify(ctx context.Context) error {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {

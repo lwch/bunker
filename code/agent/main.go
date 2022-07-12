@@ -54,9 +54,9 @@ func main() {
 	}
 
 	appCfg := &service.Config{
-		Name:         "bunker",
-		DisplayName:  "bunker",
-		Description:  "nat forward service",
+		Name:         "bunker-svr",
+		DisplayName:  "bunker server",
+		Description:  "bunker server",
 		UserName:     *user,
 		Arguments:    []string{"-conf", dir},
 		Dependencies: depends,
@@ -64,7 +64,8 @@ func main() {
 
 	cfg := conf.Load(*cf)
 
-	app := app.New(cfg)
+	a := newAgent(cfg)
+	app := app.New(a, cfg)
 	sv, err := service.New(app, appCfg)
 	runtime.Assert(err)
 

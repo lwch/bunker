@@ -3,7 +3,15 @@ syntax = "proto3";
 option go_package = "github.com/lwch/bunker/code/network";
 
 message RunShellArguments {
+    string            id = 1;
+    string          user = 2;
+    string          exec = 3;
+    string       workdir = 4;
+    repeated string  env = 5;
 }
 
 message ShellResizeArguments {
+    string   id = 1;
+    uint32 rows = 2;
+    uint32 cols = 3;
 }

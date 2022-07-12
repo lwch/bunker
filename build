@@ -1,2 +1,3 @@
 #!/bin/sh
-go build -o bin/bunker code/main.go
+go build -o bin/bunker-svr code/server/*.go
+go build -o bin/bunker code/agent/*.go

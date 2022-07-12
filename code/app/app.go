@@ -1,22 +1,26 @@
 package app
 
 import (
+	"os"
 	rt "runtime"
 
 	"github.com/kardianos/service"
-	"github.com/lwch/bunker/code/agent"
 	"github.com/lwch/bunker/code/conf"
-	"github.com/lwch/bunker/code/server"
 	"github.com/lwch/logging"
 )
 
+type handler interface {
+	Run()
+}
+
 // App main instance
 type App struct {
+	h   handler
 	cfg *conf.Configure
 }
 
-func New(cfg *conf.Configure) *App {
-	return &App{cfg}
+func New(h handler, cfg *conf.Configure) *App {
+	return &App{h: h, cfg: cfg}
 }
 
 // Start start application
@@ -40,11 +44,10 @@ func (app *App) run() {
 	})
 	defer logging.Flush()
 
-	if len(app.cfg.Server) > 0 {
-		agent.Run(app.cfg)
-	} else {
-		server.Run(app.cfg)
-	}
+	app.h.Run()
+
+	logging.Flush()
+	os.Exit(1)
 }
 
 // Stop stop application
