@@ -21,26 +21,22 @@ func NewTOTP(secret string) *TOTP {
 	return &TOTP{h: hmac.New(sha256.New, []byte(secret))}
 }
 
-func (otp *TOTP) hash(t time.Time) uint64 {
+// Gen generate otp
+func (otp *TOTP) Gen() string {
+	return otp.GenFrom(time.Now())
+}
+
+// GenFrom generate otp from time
+func (otp *TOTP) GenFrom(t time.Time) string {
 	ts := t.Unix() / 30
 	data := make([]byte, 8)
 	binary.BigEndian.PutUint64(data, uint64(ts))
 	otp.Lock()
 	otp.h.Reset()
-	data = otp.h.Sum(data)
+	otp.h.Write(data)
+	data = otp.h.Sum(nil)
 	otp.Unlock()
-	offset := data[31] & 23
-	return binary.BigEndian.Uint64(data[offset:])
-}
-
-// Gen generate otp
-func (otp *TOTP) Gen() string {
-	return fmt.Sprintf("%d", otp.hash(time.Now()))
-}
-
-// GenFrom generate otp from time
-func (otp *TOTP) GenFrom(t time.Time) string {
-	return fmt.Sprintf("%d", otp.hash(t))
+	return fmt.Sprintf("%x", data)
 }
 
 // Verify verify otp value

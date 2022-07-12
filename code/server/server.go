@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/lwch/bunker/code/conf"
 	"github.com/lwch/bunker/code/network"
@@ -44,6 +45,7 @@ func (svr *server) verify(ctx context.Context, req interface{},
 	info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 	err := svr.cfg.SecretVerify(ctx)
 	if err != nil {
+		time.Sleep(time.Second)
 		return nil, err
 	}
 	return handler(ctx, req)

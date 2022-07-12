@@ -1,6 +1,8 @@
 package utils
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestTOTP(t *testing.T) {
 	otp := NewTOTP("0123456789")
