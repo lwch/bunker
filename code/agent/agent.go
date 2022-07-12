@@ -2,6 +2,7 @@ package agent
 
 import (
 	"context"
+	"os"
 
 	"github.com/lwch/bunker/code/conf"
 	"github.com/lwch/bunker/code/network"
@@ -13,13 +14,16 @@ import (
 
 // Run run in agent mode
 func Run(cfg *conf.Configure) {
-	var conn *grpc.ClientConn
-	var err error
-	if cfg.UseSSL {
-		conn, err = grpc.Dial(cfg.Server)
-	} else {
-		conn, err = grpc.Dial(cfg.Server, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	var options []grpc.DialOption
+	if !cfg.UseSSL {
+		options = append(options, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	}
+	options = append(options, grpc.WithUnaryInterceptor(func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+		ctx = cfg.SecretContext(ctx)
+		return invoker(ctx, method, req, reply, cc, opts...)
+	}))
+
+	conn, err := grpc.Dial(cfg.Server, options...)
 	runtime.Assert(err)
 	defer conn.Close()
 
@@ -29,8 +33,9 @@ func Run(cfg *conf.Configure) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 
-	go runShell(ctx, cancel, cli)
+	go runShell(ctx, cancel, cli, cfg)
 	go runVnc(ctx, cancel, cli)
 
 	<-ctx.Done()
+	os.Exit(1)
 }

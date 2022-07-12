@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"net"
@@ -14,6 +15,7 @@ import (
 )
 
 type server struct {
+	cfg *conf.Configure
 	network.UnimplementedBunkerServer
 }
 
@@ -29,9 +31,20 @@ func Run(cfg *conf.Configure) {
 	} else {
 		l, err = net.Listen("tcp", fmt.Sprintf(":%d", cfg.Listen))
 	}
+	s := &server{cfg: cfg}
+	options = append(options, grpc.UnaryInterceptor(s.verify))
 	runtime.Assert(err)
 	logging.Info("listen on %d", cfg.Listen)
 	svr := grpc.NewServer(options...)
 	network.RegisterBunkerServer(svr, &server{})
 	runtime.Assert(svr.Serve(l))
+}
+
+func (svr *server) verify(ctx context.Context, req interface{},
+	info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	err := svr.cfg.SecretVerify(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return handler(ctx, req)
 }

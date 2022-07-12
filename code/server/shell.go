@@ -8,7 +8,7 @@ import (
 )
 
 func (svr *server) RunShell(context.Context, *emptypb.Empty) (*network.RunShellArguments, error) {
-	return nil, nil
+	return &network.RunShellArguments{}, nil
 }
 
 func (svr *server) ShellResize(context.Context, *emptypb.Empty) (*network.ShellResizeArguments, error) {

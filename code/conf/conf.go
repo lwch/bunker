@@ -1,12 +1,17 @@
 package conf
 
 import (
+	"context"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/lwch/bunker/code/utils"
 	"github.com/lwch/runtime"
 	"github.com/lwch/yaml"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 type Configure struct {
@@ -19,6 +24,7 @@ type Configure struct {
 	LogDir    string
 	LogSize   utils.Bytes
 	LogRotate int
+	otp       *utils.TOTP
 }
 
 // Load load configure file
@@ -55,5 +61,31 @@ func Load(dir string) *Configure {
 		LogDir:    cfg.Log.Dir,
 		LogSize:   cfg.Log.Size,
 		LogRotate: cfg.Log.Rotate,
+		otp:       utils.NewTOTP(cfg.Secret),
 	}
+}
+
+// SecretContext append token from secret
+func (cfg *Configure) SecretContext(ctx context.Context) context.Context {
+	return metadata.AppendToOutgoingContext(ctx, "authorization", "TOTP "+cfg.otp.Gen())
+}
+
+func (cfg *Configure) SecretVerify(ctx context.Context) error {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return status.Errorf(codes.InvalidArgument, "Retrieving metadata is failed")
+	}
+	token := md.Get("authorization")
+	if len(token) == 0 {
+		return status.Errorf(codes.Unauthenticated, "Missing authorization token")
+	}
+	tk := token[0]
+	if !strings.HasPrefix(tk, "TOTP ") {
+		return status.Error(codes.Unauthenticated, "Invalid token")
+	}
+	tk = strings.TrimPrefix(tk, "TOTP ")
+	if !cfg.otp.Verify(tk) {
+		return status.Error(codes.Unauthenticated, "Invalid token")
+	}
+	return nil
 }
