@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -86,19 +85,18 @@ func (svr *server) httpServe(ctx context.Context, cancel context.CancelFunc) {
 		c.AbortWithError(http.StatusInternalServerError, e)
 	}))
 
+	router.StaticFS("/", http.Dir("frontend/dist"))
+
 	type handler interface {
 		ApiFuncs() []gin.RouteInfo
 	}
 
+	api := router.Group("/api")
 	reg := func(h handler) {
 		for _, info := range h.ApiFuncs() {
-			if !strings.HasPrefix(info.Path, "/api/") {
-				info.Path = "/api/" + info.Path
-			}
-			router.Handle(info.Method, info.Path, info.HandlerFunc)
+			api.Handle(info.Method, info.Path, info.HandlerFunc)
 		}
 	}
-
 	reg(svr.sh)
 
 	logging.Info("http listen on %d", svr.cfg.HttpListen)
