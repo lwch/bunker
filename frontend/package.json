@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "balm-ui": "^10.9.3",
-    "vue": "^3.0.0"
+    "vue": "^3.0.0",
+    "vue-router": "^4.1.2"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.17.0",

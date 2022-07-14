@@ -15,12 +15,13 @@ type handler interface {
 
 // App main instance
 type App struct {
-	h   handler
-	cfg *conf.Configure
+	h    handler
+	cfg  *conf.Configure
+	name string
 }
 
-func New(h handler, cfg *conf.Configure) *App {
-	return &App{h: h, cfg: cfg}
+func New(h handler, cfg *conf.Configure, name string) *App {
+	return &App{h: h, cfg: cfg, name: name}
 }
 
 // Start start application
@@ -36,7 +37,7 @@ func (app *App) run() {
 	}
 	logging.SetSizeRotate(logging.SizeRotateConfig{
 		Dir:         app.cfg.LogDir,
-		Name:        "bunker",
+		Name:        app.name,
 		Size:        int64(app.cfg.LogSize.Bytes()),
 		Rotate:      app.cfg.LogRotate,
 		WriteStdout: stdout,

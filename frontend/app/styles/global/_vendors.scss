@@ -1,1 +1,5 @@
+@use 'balm-ui/components/divider' with (
+    $horizontal-height: 1px
+);
+
 @use 'balm-ui/dist/balm-ui';

@@ -1,3 +1,10 @@
 #!/bin/sh
+set -e
+
+# OLD_DIR=`pwd`
+# cd frontend && npm run prod
+# cd "$OLD_DIR"
+
+go generate code/server/*.go
 go build -o bin/bunker-svr code/server/*.go
 go build -o bin/bunker code/agent/*.go

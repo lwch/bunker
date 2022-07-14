@@ -65,7 +65,7 @@ func main() {
 	cfg := conf.Load(*cf)
 
 	svr := newServer(cfg)
-	app := app.New(svr, cfg)
+	app := app.New(svr, cfg, "bunker-svr")
 	sv, err := service.New(app, appCfg)
 	runtime.Assert(err)
 

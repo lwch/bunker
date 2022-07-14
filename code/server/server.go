@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"crypto/tls"
+	"embed"
 	"fmt"
+	"io/fs"
 	"net"
 	"net/http"
 	"time"
@@ -67,6 +69,10 @@ func (svr *server) grpcServe(ctx context.Context, cancel context.CancelFunc) {
 	runtime.Assert(s.Serve(l))
 }
 
+//go:generate cp -r ../../frontend/dist dist
+//go:embed dist
+var html embed.FS
+
 func (svr *server) httpServe(ctx context.Context, cancel context.CancelFunc) {
 	defer utils.Recover("http_serve")
 	defer cancel()
@@ -85,7 +91,9 @@ func (svr *server) httpServe(ctx context.Context, cancel context.CancelFunc) {
 		c.AbortWithError(http.StatusInternalServerError, e)
 	}))
 
-	router.StaticFS("/", http.Dir("frontend/dist"))
+	dist, err := fs.Sub(html, "dist")
+	runtime.Assert(err)
+	router.StaticFS("/", http.FS(dist))
 
 	type handler interface {
 		ApiFuncs() []gin.RouteInfo
@@ -100,7 +108,6 @@ func (svr *server) httpServe(ctx context.Context, cancel context.CancelFunc) {
 	reg(svr.sh)
 
 	logging.Info("http listen on %d", svr.cfg.HttpListen)
-	var err error
 	if len(svr.cfg.TLSCrt) > 0 && len(svr.cfg.TLSKey) > 0 {
 		err = router.RunTLS(fmt.Sprintf(":%d", svr.cfg.HttpListen),
 			svr.cfg.TLSCrt, svr.cfg.TLSKey)

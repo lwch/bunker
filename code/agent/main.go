@@ -65,7 +65,7 @@ func main() {
 	cfg := conf.Load(*cf)
 
 	a := newAgent(cfg)
-	app := app.New(a, cfg)
+	app := app.New(a, cfg, "bunker")
 	sv, err := service.New(app, appCfg)
 	runtime.Assert(err)
 
