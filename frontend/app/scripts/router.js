@@ -5,25 +5,29 @@ import Users from '@/views/users';
 const dashboard = {
     path: '/',
     component: Dashboard,
-    icon: 'dashboard'
+    icon: 'dashboard',
+    name: '仪表盘'
 };
 
 const users = {
     path: '/users',
     component: Users,
-    icon: 'person'
+    icon: 'person',
+    name: '用户列表'
 };
 
 const devices = {
     path: '/devices',
-    component: '<template></template>',
-    icon: 'computer'
+    component: {template: 'devices'},
+    icon: 'computer',
+    name: '资产列表'
 };
 
 const tags = {
     path: '/tags',
-    component: '<template></template>',
-    icon: 'tag'
+    component: {template: 'tags'},
+    icon: 'tag',
+    name: '标签管理'
 };
 
 const groups = [
@@ -51,7 +55,7 @@ const router = createRouter({
     routes: routes
 });
 
-export default {
+export {
     groups,
     router
 };

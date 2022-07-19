@@ -5,67 +5,37 @@
   </ui-drawer-header>
   <ui-drawer-content>
     <ui-list-group>
-      <ui-list-group-subheader>概览</ui-list-group-subheader>
-      <ui-nav>
+      <div v-for="(group,i) in groups">
+        <ui-list-group-subheader><h3>{{group.name}}</h3></ui-list-group-subheader>
         <router-link
-          v-slot="{ href, isActive }"
-          to="/"
+          v-for="page in group.pages"
+          v-slot="{href,isActive}"
+          :to="page.path"
           style="text-decoration:none;">
           <ui-nav-item :href="href" :active="isActive">
             <ui-item-first-content>
-              <ui-icon>dashboard</ui-icon>
+              <ui-icon>{{page.icon}}</ui-icon>
             </ui-item-first-content>
-            <ui-item-text-content>仪表盘</ui-item-text-content>
+            <ui-item-text-content>{{page.name}}</ui-item-text-content>
           </ui-nav-item>
-        </router-link>
-      </ui-nav>
-
-      <ui-list-divider></ui-list-divider>
-
-      <ui-list-group-subheader>用户管理</ui-list-group-subheader>
-      <ui-nav>
-        <router-link
-          v-slot="{ href, isActive }"
-          to="/users"
-          style="text-decoration:none;">
-          <ui-nav-item :href="href" :active="isActive">
-            <ui-item-first-content>
-              <ui-icon>person</ui-icon>
-            </ui-item-first-content>
-            <ui-item-text-content>用户列表</ui-item-text-content>
-          </ui-nav-item>
-        </router-link>
-        <router-link
-          v-slot="{ href, isActive }"
-          to="/users2"
-          style="text-decoration:none;">
-          <ui-nav-item :href="href" :active="isActive">
-            <ui-item-first-content>
-              <ui-icon>person</ui-icon>
-            </ui-item-first-content>
-            <ui-item-text-content>用户列表</ui-item-text-content>
-          </ui-nav-item>
-        </router-link>
-      </ui-nav>
-      <ui-list-divider></ui-list-divider>
-
-      <ui-list-group-subheader>资产管理</ui-list-group-subheader>
-      <ui-nav>
-        <ui-nav-item href="javascript:void(0)">
-          <ui-icon>computer</ui-icon>&nbsp;资产列表
-        </ui-nav-item>
-        <ui-nav-item href="javascript:void(0)">
-          <ui-icon>tag</ui-icon>&nbsp;标签管理
-        </ui-nav-item>
-      </ui-nav>
+          </router-link>
+        <ui-list-divider v-if="i!==groups.length-1"></ui-list-divider>
+      </div>
     </ui-list-group>
   </ui-drawer-content>
 </ui-drawer>
 </template>
 
 <script>
+import { groups } from '@/router';
+
 export default {
-  name: 'sidebar'
+  name: 'sidebar',
+  setup() {
+    return {
+      groups: groups
+    };
+  }
 };
 </script>
 
