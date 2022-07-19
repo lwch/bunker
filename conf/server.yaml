@@ -1,6 +1,17 @@
-grpc_listen: 6155 # agent通信端口号
-http_listen: 8080 # web端口号
-#include common.yaml
+grpc_listen: 6155  # agent通信端口号
+http_listen: 8080  # web端口号
+secret: 0123456789 # 预共享密钥
+log:
+  target: [stdout, file]
+  dir: ./logs # 日志保存路径
+  size: 50M   # 单个日志文件大小
+  rotate: 7   # 保留数量
+mysql:
+  host: 127.0.0.1
+  port: 3306
+  db: bunker
+  user: root
+  pass: 123456
 #tls:
 #  key: /dir/to/tls/key/file # tls密钥
 #  crt: /dir/to/tls/crt/file # tls证书

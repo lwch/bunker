@@ -1,4 +1,8 @@
 id: debian             # agent编号
 server: 127.0.0.1:6155 # 服务器地址
 ssl: false             # 是否使用tls加密连接
-#include common.yaml
+secret: 0123456789     # 预共享密钥
+log:
+  dir: ./logs # 日志保存路径
+  size: 50M   # 单个日志文件大小
+  rotate: 7   # 保留数量
