@@ -14,13 +14,13 @@ const appRoot = 'app';
 // 中文文档 - https://balm.js.org/docs/zh/config/
 module.exports = {
   server: {
-    // proxyConfig: {
-    //   context: '/api',
-    //   options: {
-    //     target: 'http://your.project.dev', // Target host
-    //     changeOrigin: true // Needed for virtual hosted sites
-    //   }
-    // }
+    proxyConfig: {
+      context: '/api',
+      options: {
+        target: 'http://127.0.0.1:8080', // Target host
+        changeOrigin: true // Needed for virtual hosted sites
+      }
+    }
   },
   roots: {
     source: appRoot

@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/dustin/go-humanize v1.0.0
-	github.com/gin-gonic/gin v1.8.1 // indirect
+	github.com/gin-gonic/gin v1.8.1
 	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/kardianos/service v1.2.2-0.20220428125717-29f8c79c511b
 	github.com/lwch/logging v0.0.0-20220322084100-ec48185d95ab

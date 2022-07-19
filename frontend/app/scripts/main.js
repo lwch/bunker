@@ -8,6 +8,6 @@ const app = createApp(App);
 
 app.use(BalmUI); // Mandatory
 app.use(BalmUIPlus); // Optional
-app.use(router);
+app.use(router.router);
 
 app.mount('#app');

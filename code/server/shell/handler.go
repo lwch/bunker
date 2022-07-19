@@ -26,7 +26,7 @@ func New() *Handler {
 // ApiFuncs return api functions
 func (h *Handler) ApiFuncs() []gin.RouteInfo {
 	return []gin.RouteInfo{
-		{Method: http.MethodConnect, Path: "/shell/:id", HandlerFunc: h.new},
+		{Method: http.MethodPost, Path: "/shell/:id", HandlerFunc: h.new},
 		{Method: http.MethodPatch, Path: "/shell/:id/:cid/resize", HandlerFunc: h.resize},
 	}
 }
