@@ -31,7 +31,6 @@ type Configure struct {
 // Load load configure file
 func Load(dir string) *Configure {
 	var cfg struct {
-		ID         string `yaml:"id"`
 		Server     string `yaml:"server"`
 		SSL        bool   `yaml:"ssl"`
 		GrpcListen uint16 `yaml:"grpc_listen"`
@@ -54,7 +53,6 @@ func Load(dir string) *Configure {
 		cfg.Log.Dir = filepath.Join(filepath.Dir(dir), cfg.Log.Dir)
 	}
 	return &Configure{
-		ID:         cfg.ID,
 		Server:     cfg.Server,
 		UseSSL:     cfg.SSL,
 		GrpcListen: cfg.GrpcListen,

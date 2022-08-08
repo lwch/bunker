@@ -1,4 +1,3 @@
-id: debian             # agent编号
 server: 127.0.0.1:6155 # 服务器地址
 ssl: false             # 是否使用tls加密连接
 secret: 0123456789     # 预共享密钥
