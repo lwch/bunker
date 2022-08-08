@@ -10,6 +10,7 @@ import (
 	"github.com/kardianos/service"
 	"github.com/lwch/bunker/code/app"
 	"github.com/lwch/bunker/code/conf"
+	svc "github.com/lwch/bunker/code/server/service"
 	"github.com/lwch/runtime"
 )
 
@@ -31,11 +32,11 @@ func showVersion() {
 func main() {
 	user := flag.String("user", "", "daemon user")
 	cf := flag.String("conf", "", "configure file path")
-	version := flag.Bool("version", false, "show version info")
+	ver := flag.Bool("version", false, "show version info")
 	act := flag.String("action", "", "install or uninstall")
 	flag.Parse()
 
-	if *version {
+	if *ver {
 		showVersion()
 		os.Exit(0)
 	}
@@ -64,7 +65,7 @@ func main() {
 
 	cfg := conf.Load(*cf)
 
-	svr := newServer(cfg)
+	svr := svc.New(cfg, version)
 	app := app.New(svr, cfg, "bunker-svr")
 	sv, err := service.New(app, appCfg)
 	runtime.Assert(err)

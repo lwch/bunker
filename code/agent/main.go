@@ -29,7 +29,6 @@ func showVersion() {
 }
 
 func main() {
-	user := flag.String("user", "", "daemon user")
 	cf := flag.String("conf", "", "configure file path")
 	version := flag.Bool("version", false, "show version info")
 	act := flag.String("action", "", "install or uninstall")
@@ -57,14 +56,16 @@ func main() {
 		Name:         "bunker-svr",
 		DisplayName:  "bunker server",
 		Description:  "bunker server",
-		UserName:     *user,
 		Arguments:    []string{"-conf", dir},
 		Dependencies: depends,
 	}
 
 	cfg := conf.Load(*cf)
 
-	a := newAgent(cfg)
+	pwd, err := os.Getwd()
+	runtime.Assert(err)
+
+	a := newAgent(cfg, filepath.Clean(pwd))
 	app := app.New(a, cfg, "bunker")
 	sv, err := service.New(app, appCfg)
 	runtime.Assert(err)

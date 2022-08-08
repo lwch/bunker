@@ -15,7 +15,6 @@ import (
 )
 
 type Configure struct {
-	ID         string
 	Server     string
 	UseSSL     bool
 	GrpcListen uint16
@@ -67,8 +66,10 @@ func Load(dir string) *Configure {
 }
 
 // BuildHeader build request header
-func (cfg *Configure) BuildHeader(ctx context.Context) context.Context {
-	ctx = metadata.AppendToOutgoingContext(ctx, "id", cfg.ID)
+func (cfg *Configure) BuildHeader(ctx context.Context, id string) context.Context {
+	if len(id) > 0 {
+		ctx = metadata.AppendToOutgoingContext(ctx, "id", id)
+	}
 	ctx = metadata.AppendToOutgoingContext(ctx, "authorization", "TOTP "+cfg.otp.Gen())
 	return ctx
 }

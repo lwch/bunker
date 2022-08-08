@@ -4,9 +4,13 @@ option go_package = "github.com/lwch/bunker/code/network";
 
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
+import "ctrl.proto";
 import "shell.proto";
 
 service Bunker {
+    // ctrl
+    rpc Connect(ConnectArgs) returns(ConnectResponse) {}
+    rpc KeepAlive(google.protobuf.Empty) returns(google.protobuf.Empty) {}
     // shell
     rpc RunShell(google.protobuf.Empty) returns(RunShellArguments) {}
     rpc ShellResize(google.protobuf.Empty) returns(ShellResizeArguments) {}

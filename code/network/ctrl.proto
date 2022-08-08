@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+option go_package = "github.com/lwch/bunker/code/network";
+
+message ConnectArgs {
+    string       id = 1;
+    string  version = 2;
+    string hostname = 3;
+    string       os = 4;
+    string platform = 5;
+    string     arch = 6;
+}
+
+message ConnectResponse {
+    string      id = 1;
+    string version = 2;
+}

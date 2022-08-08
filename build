@@ -5,6 +5,6 @@ set -e
 # cd frontend && npm run prod
 # cd "$OLD_DIR"
 
-go generate code/server/*.go
+go generate code/server/service/*.go
 go build -o bin/bunker-svr code/server/*.go
 go build -o bin/bunker code/agent/*.go

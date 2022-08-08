@@ -1,4 +1,4 @@
-package main
+package service
 
 import (
 	"context"
@@ -18,62 +18,79 @@ import (
 	"github.com/lwch/logging"
 	"github.com/lwch/runtime"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-type server struct {
-	network.UnimplementedBunkerServer
-	cfg *conf.Configure
-	sh  *shell.Handler
+var emptyResp emptypb.Empty
+
+type handler interface {
+	ApiFuncs() []gin.RouteInfo
+	OnConnect(string)
+	OnDisconnect(string)
+	OnKeepalive(string)
 }
 
-func newServer(cfg *conf.Configure) *server {
-	return &server{
-		cfg: cfg,
-		sh:  shell.New(),
+type service struct {
+	network.UnimplementedBunkerServer
+	cfg      *conf.Configure
+	idPrefix uint64
+	version  string
+
+	// handlers
+	handler []handler
+	sh      *shell.Handler
+}
+
+// New create service
+func New(cfg *conf.Configure, version string) *service {
+	sh := shell.New()
+	svc := &service{
+		cfg:     cfg,
+		version: version,
+		sh:      sh,
 	}
+	svc.handler = append(svc.handler, sh)
+	return svc
 }
 
 // Run run in server mode
-func (svr *server) Run() {
+func (svc *service) Run() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	go svr.grpcServe(ctx, cancel)
-	go svr.httpServe(ctx, cancel)
+	go svc.grpcServe(ctx, cancel)
+	go svc.httpServe(ctx, cancel)
 
 	<-ctx.Done()
 }
 
-func (svr *server) grpcServe(ctx context.Context, cancel context.CancelFunc) {
+func (svc *service) grpcServe(ctx context.Context, cancel context.CancelFunc) {
 	defer utils.Recover("grpc_serve")
 	defer cancel()
 
 	var l net.Listener
 	var err error
 	var options []grpc.ServerOption
-	if len(svr.cfg.TLSCrt) > 0 && len(svr.cfg.TLSKey) > 0 {
-		cert, err := tls.LoadX509KeyPair(svr.cfg.TLSCrt, svr.cfg.TLSKey)
+	if len(svc.cfg.TLSCrt) > 0 && len(svc.cfg.TLSKey) > 0 {
+		cert, err := tls.LoadX509KeyPair(svc.cfg.TLSCrt, svc.cfg.TLSKey)
 		runtime.Assert(err)
 		options = append(options, grpc.Creds(credentials.NewServerTLSFromCert(&cert)))
 	}
-	l, err = net.Listen("tcp", fmt.Sprintf(":%d", svr.cfg.GrpcListen))
-	options = append(options, grpc.UnaryInterceptor(svr.verify))
+	l, err = net.Listen("tcp", fmt.Sprintf(":%d", svc.cfg.GrpcListen))
+	options = append(options, grpc.UnaryInterceptor(svc.verify))
 	runtime.Assert(err)
-	logging.Info("grpc listen on %d", svr.cfg.GrpcListen)
+	logging.Info("grpc listen on %d", svc.cfg.GrpcListen)
 	s := grpc.NewServer(options...)
-	network.RegisterBunkerServer(s, svr)
+	network.RegisterBunkerServer(s, svc)
 	runtime.Assert(s.Serve(l))
 }
 
-//go:generate cp -r ../../frontend/dist dist
+//go:generate cp -r ../../../frontend/dist dist
 //go:embed dist
 var html embed.FS
 
-func (svr *server) httpServe(ctx context.Context, cancel context.CancelFunc) {
+func (svc *service) httpServe(ctx context.Context, cancel context.CancelFunc) {
 	defer utils.Recover("http_serve")
 	defer cancel()
 
@@ -95,46 +112,32 @@ func (svr *server) httpServe(ctx context.Context, cancel context.CancelFunc) {
 	runtime.Assert(err)
 	router.StaticFS("/", http.FS(dist))
 
-	type handler interface {
-		ApiFuncs() []gin.RouteInfo
-	}
-
 	api := router.Group("/api")
 	reg := func(h handler) {
 		for _, info := range h.ApiFuncs() {
 			api.Handle(info.Method, info.Path, info.HandlerFunc)
 		}
 	}
-	reg(svr.sh)
+	for _, h := range svc.handler {
+		reg(h)
+	}
 
-	logging.Info("http listen on %d", svr.cfg.HttpListen)
-	if len(svr.cfg.TLSCrt) > 0 && len(svr.cfg.TLSKey) > 0 {
-		err = router.RunTLS(fmt.Sprintf(":%d", svr.cfg.HttpListen),
-			svr.cfg.TLSCrt, svr.cfg.TLSKey)
+	logging.Info("http listen on %d", svc.cfg.HttpListen)
+	if len(svc.cfg.TLSCrt) > 0 && len(svc.cfg.TLSKey) > 0 {
+		err = router.RunTLS(fmt.Sprintf(":%d", svc.cfg.HttpListen),
+			svc.cfg.TLSCrt, svc.cfg.TLSKey)
 	} else {
-		err = router.Run(fmt.Sprintf(":%d", svr.cfg.HttpListen))
+		err = router.Run(fmt.Sprintf(":%d", svc.cfg.HttpListen))
 	}
 	runtime.Assert(err)
 }
 
-func (svr *server) verify(ctx context.Context, req interface{},
+func (svc *service) verify(ctx context.Context, req interface{},
 	info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-	err := svr.cfg.SecretVerify(ctx)
+	err := svc.cfg.SecretVerify(ctx)
 	if err != nil {
 		time.Sleep(time.Second)
 		return nil, err
 	}
 	return handler(ctx, req)
-}
-
-func agentID(ctx context.Context) (string, error) {
-	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok {
-		return "", status.Errorf(codes.InvalidArgument, "Retrieving metadata is failed")
-	}
-	id := md.Get("id")
-	if len(id) == 0 {
-		return "", status.Errorf(codes.Unauthenticated, "Missing agent id")
-	}
-	return id[0], nil
 }
